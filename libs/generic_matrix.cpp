@@ -15,7 +15,7 @@ matrix::matrix(int row, int column):rows(row), columns(column){
         std::cout << "Constructor Called " << this << std::endl;
     #endif
 
-    elements = (float*)malloc(sizeof(float)*rows*columns);
+    elements = (float*)malloc(sizeof(float)*(rows*columns));
 }
 
 matrix::matrix(int row, int column, float *element):rows(row), columns(column){
@@ -74,7 +74,8 @@ void matrix::operator = (const matrix& m){
     columns = m.columns;
     rows = m.rows;
 
-    elements = (float*)malloc(sizeof(matrix)*columns*rows);
+    elements = (float*)malloc(sizeof(matrix)*(rows*columns));
+
     for(int i = 0; i < columns*rows; i++){
         elements[i] = m.elements[i];
     }
@@ -113,7 +114,7 @@ matrix matrix::transpose(){
 
 void matrix::ramdom_values(int range){
     for(int i = 0; i < rows*columns; i++){
-        elements[i] = i;
+        elements[i] = (rand()%(2*range))-range;
     }
 }
 
@@ -165,8 +166,8 @@ void matrix::operator *= (const matrix& m){
     }
     float* el = (float*)malloc(sizeof(float)*rows*m.columns);
 
-    for(int i = 0; i < m.columns; i++){
-        for(int j = 0; j < rows; j++){
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < m.columns; j++){
             el[j+(i*m.columns)] = elements[i*columns] * m.elements[j];
             for(int z = 1; z < columns; z++){
                 el[j+(i*m.columns)] += elements[z+(i*columns)] * m.elements[z*m.columns+j];
@@ -186,6 +187,9 @@ void matrix::operator /= (float number){
 }
 
 matrix matrix::operator + (float number){
+    if(columns != rows){
+        return *this;
+    }
     matrix m1(rows, columns);
 
     for(int i = 0; i < rows*columns; i++){
@@ -199,6 +203,10 @@ matrix matrix::operator + (float number){
 }
 
 matrix matrix::operator + (const matrix& m){
+    if(m.columns != columns || m.rows != rows){
+        std::cout << "Error in operator +" << std::endl;
+        return *this;
+    }
     matrix m_return(rows, columns);
     for(int i = 0; i < columns*rows; i++){
         m_return.elements[i] = m.elements[i] + elements[i];
@@ -208,9 +216,11 @@ matrix matrix::operator + (const matrix& m){
 }
 
 matrix matrix::operator - (float number){
+    if(columns != rows){
+        return *this;
+    }
     matrix m1(rows, columns);
-    //float* el = (float*)malloc(sizeof(matrix)*columns*rows);
-    
+
     for(int i = 0; i < rows*columns; i++){
         m1.elements[i] = elements[i];
     }
@@ -222,6 +232,10 @@ matrix matrix::operator - (float number){
 }
 
 matrix matrix::operator - (const matrix& m){
+    if(m.columns != columns || m.rows != rows){
+        std::cout << "Error in operator -" << std::endl;
+        return *this;
+    }
     matrix m_return(rows, columns);
     for(int i = 0; i < columns*rows; i++){
         m_return.elements[i] = m.elements[i] - elements[i];
@@ -240,16 +254,22 @@ matrix matrix::operator * (float number){
 }
 
 matrix matrix::operator * (const matrix& m){
+    if(columns != m.rows){
+        std::cout << "Error in operator *" << std::endl;
+        return *this;
+    }
+
     matrix el(rows, m.columns);
 
-    for(int i = 0; i < el.columns; i++){
-        for(int j = 0; j < el.rows; j++){
+    for(int i = 0; i < el.rows; i++){
+        for(int j = 0; j < el.columns; j++){
             el.elements[j+(i*m.columns)] = elements[i*columns] * m.elements[j];
             for(int z = 1; z < columns; z++){
                 el.elements[j+(i*m.columns)] += elements[z+(i*columns)] * m.elements[z*m.columns+j];
             }
         }
     }
+
     return el;
 }
 
@@ -288,9 +308,9 @@ bool matrix::operator != (const matrix& m1){
 
 std::ostream& operator << (std::ostream& os, matrix& m){
     std::cout << m.rows << "x" << m.columns << std::endl;
-    for(int i = 0; i < m.columns; i++){
+    for(int i = 0; i < m.rows; i++){
         std::cout << "|";
-        for(int j = 0; j < m.rows; j++){
+        for(int j = 0; j < m.columns; j++){
             std::cout << m.elements[j + (m.columns*i)] << "\t";
         }
         std::cout << "|\n";

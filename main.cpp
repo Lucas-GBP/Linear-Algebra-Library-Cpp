@@ -1,11 +1,6 @@
 #include "main.hpp"
-#include "libs/generic_matrix.hpp"
-#include <cstdlib>
-#include <iostream>
 
 using namespace std;
-
-//TODO Arrumar operação de multiplicação
 
 int main(){
     cout << "Hello World!\n\n";
@@ -24,19 +19,33 @@ int main(){
         m3 = (m1 + 2 + m2)*3*m2.transpose();
         cout << m3 << endl;
     }
-    /*{
-        #define SIZE 50
-            matrix m1(3, 50);
-            m1.ramdom_values(10);
-            //cout << m1;
-            matrix m2(3, 50);
-            m2.ramdom_values(10);
-            //cout << m2;
+    {
+        int size = rand()%10+1;
 
-            matrix m3;
-            m3 = m1*m2;
-            //cout << m3;
-    }*/
+        matrix m1(rand()%10+1, size);
+        m1.ramdom_values(100);
+        cout << m1 << endl;
+        
+        matrix m2(size, rand()%10+1);
+        m2.ramdom_values(100);
+        cout << m2 << endl;
+        
+        matrix m3;
+        m3 = m1*m2;
+        cout << m3;
+    }
+    {
+        for(int i = 0; i < 10000; i++){
+            int size = rand()%100+1;
+
+            matrix m1(size, size);
+            m1.ramdom_values(100);
+            matrix m2(size, size);
+            m2.ramdom_values(100);
+
+            test_operations(m1, m2);
+        }
+    }
     cout << "\nGoodbye World." << endl;
     return 0;
 }
@@ -160,9 +169,9 @@ void test_operations(matrix m1, matrix m2){
         */
         cout << endl;
         {
-            //vscode tá chorando mas o gnu não então...
             cout << "m3 = (m1 + 2 + m2)*3*m2\n";
-            
+            m3 = (m1 + 2 + m2)*3*m2;
+            cout << m3 << endl;
         }
         cout << endl;
 }

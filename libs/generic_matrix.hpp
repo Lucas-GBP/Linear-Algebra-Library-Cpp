@@ -17,7 +17,7 @@ class matrix{
         float element(int);
         matrix copy();
         matrix transpose();
-        void ramdom_values(int);
+        void ramdom_values(int range);
 
         void operator = (float);
         void operator = (const matrix&);
