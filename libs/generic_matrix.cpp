@@ -1,13 +1,12 @@
 #include "generic_matrix.hpp"
 
-#define DEBUG
+//#define DEBUG
 
 matrix::matrix(){
     #ifdef DEBUG
         std::cout << "No arg Constructor Called: " << this << std::endl;
     #endif
 
-    is_copy = false;
     elements = NULL;
 }
 
@@ -16,7 +15,6 @@ matrix::matrix(int row, int column):rows(row), columns(column){
         std::cout << "Constructor Called " << this << std::endl;
     #endif
 
-    is_copy = false;
     elements = (float*)malloc(sizeof(float)*rows*columns);
 }
 
@@ -25,27 +23,32 @@ matrix::matrix(int row, int column, float *element):rows(row), columns(column){
         std::cout << "Constructor Called: " << this << std::endl;
     #endif
 
-    is_copy = false;
     elements = (float*)malloc(sizeof(float)*rows*columns);
     for(int i = 0; i < rows*columns; i++){
         elements[i] = element[i];
     }
 }
 
-matrix::matrix(matrix& m):columns(m.columns), rows(m.rows), elements(m.elements), is_copy(true){
+matrix::matrix(matrix& m):columns(m.columns), rows(m.rows), elements(m.elements){
     #ifdef DEBUG
         std::cout << "Copy Constructor Called: " << this << std::endl;
     #endif
+    elements = (float*)malloc(sizeof(matrix)*columns*rows);
+    for(int i = 0; i < rows*columns; i++){
+        elements[i] = m.elements[i];
+    }
 }
 
 matrix::~matrix(){
     #ifdef DEBUG
-        std::cout << "Destructor Called: " << is_copy << " " << this << std::endl;
+        std::cout << "Destructor Called: " << this << std::endl;
     #endif
 
-    if(!is_copy){
+    free(elements);
+
+    /*if(!is_copy){
         free(elements);
-    }
+    }*/
 }
 
 void matrix::operator = (float num){
@@ -66,13 +69,12 @@ void matrix::operator = (float num){
     }
 }
 
-void matrix::operator = (matrix m){
+void matrix::operator = (const matrix& m){
     free(elements);
     columns = m.columns;
     rows = m.rows;
 
     elements = (float*)malloc(sizeof(matrix)*columns*rows);
-
     for(int i = 0; i < columns*rows; i++){
         elements[i] = m.elements[i];
     }
@@ -87,13 +89,32 @@ float matrix::element(int index){
 }
 
 matrix matrix::copy(){
-    float* el = (float*)malloc(sizeof(matrix)*columns*rows);
+    matrix m1(rows, columns);
+    m1.elements = (float*)malloc(sizeof(matrix)*columns*rows);
     for(int i = 0; i < rows*columns; i++){
-        el[i] = elements[i];
+        m1.elements[i] = elements[i];
     }
-    matrix m1(rows, columns, el);
+
 
     return m1;
+}
+
+matrix matrix::transpose(){
+    matrix return_m(columns, rows);
+
+    for(int i = 0; i < columns; i++){
+        for(int j = 0; j < rows; j++){
+            return_m.elements[i+(j*columns)] = elements[j+(i*columns)];
+        }
+    }
+
+    return return_m;
+}
+
+void matrix::ramdom_values(int range){
+    for(int i = 0; i < rows*columns; i++){
+        elements[i] = i;
+    }
 }
 
 void matrix::operator += (float number){
@@ -105,7 +126,7 @@ void matrix::operator += (float number){
     }
 }
 
-void matrix::operator += (matrix m){
+void matrix::operator += (const matrix& m){
     if(m.columns != columns || m.rows != rows){
         return;
     }
@@ -123,7 +144,7 @@ void matrix::operator -= (float number){
     }
 }
 
-void matrix::operator -= (matrix m){
+void matrix::operator -= (const matrix& m){
     if(m.columns != columns || m.rows != rows){
         return;
     }
@@ -138,7 +159,7 @@ void matrix::operator *= (float number){
     }
 }
 
-void matrix::operator *= (matrix m){
+void matrix::operator *= (const matrix& m){
     if(columns != m.rows){
         return;
     }
@@ -146,9 +167,9 @@ void matrix::operator *= (matrix m){
 
     for(int i = 0; i < m.columns; i++){
         for(int j = 0; j < rows; j++){
-            el[i+(j*m.columns)] = elements[i*columns] * m.elements[j];
+            el[j+(i*m.columns)] = elements[i*columns] * m.elements[j];
             for(int z = 1; z < columns; z++){
-                el[i+(j*m.columns)] += elements[z+(i*columns)] * m.elements[z*m.columns+j];
+                el[j+(i*m.columns)] += elements[z+(i*columns)] * m.elements[z*m.columns+j];
             }
         }
     }
@@ -165,79 +186,67 @@ void matrix::operator /= (float number){
 }
 
 matrix matrix::operator + (float number){
-    float* el = (float*)malloc(sizeof(matrix)*columns*rows);
+    matrix m1(rows, columns);
 
     for(int i = 0; i < rows*columns; i++){
-        el[i] = elements[i];
+         m1.elements[i] = elements[i];
     }
     for(int i = 0; i < columns; i++){
-        el[i*(columns+1)] += number;
+         m1.elements[i*(columns+1)] += number;
     }
-
-    matrix m1(rows, columns);
-    m1.elements = el;
 
     return m1;
 }
 
-matrix matrix::operator + (matrix m){
-    float* el = (float*)malloc(sizeof(float)*rows*columns);
+matrix matrix::operator + (const matrix& m){
+    matrix m_return(rows, columns);
     for(int i = 0; i < columns*rows; i++){
-        el[i] = m.elements[i] + elements[i];
+        m_return.elements[i] = m.elements[i] + elements[i];
     }
 
-    m.elements = el;
-    m.is_copy = false;
-
-    return m;
+    return m_return;
 }
 
 matrix matrix::operator - (float number){
-    float* el = (float*)malloc(sizeof(matrix)*columns*rows);
+    matrix m1(rows, columns);
+    //float* el = (float*)malloc(sizeof(matrix)*columns*rows);
     
     for(int i = 0; i < rows*columns; i++){
-        el[i] = elements[i];
+        m1.elements[i] = elements[i];
     }
     for(int i = 0; i < columns; i++){
-        el[i*(columns+1)] -= number;
+        m1.elements[i*(columns+1)] -= number;
     }
-
-    matrix m1(rows, columns);
-    m1.elements = el;
 
     return m1;
 }
 
-matrix matrix::operator - (matrix m){
-    float* el = (float*)malloc(sizeof(float)*rows*columns);
+matrix matrix::operator - (const matrix& m){
+    matrix m_return(rows, columns);
     for(int i = 0; i < columns*rows; i++){
-        el[i] = m.elements[i] - elements[i];
+        m_return.elements[i] = m.elements[i] - elements[i];
     }
 
-    m.elements = el;
-    m.is_copy = false;
-
-    return m;
+    return m_return;
 }
 
 matrix matrix::operator * (float number){
-    float* el = (float*)malloc(sizeof(matrix)*columns*rows);
+    matrix m1(rows, columns);
     for(int i = 0; i < rows*columns; i++){
-        el[i] = elements[i]*number;
+        m1.elements[i] = elements[i]*number;
     }
-    matrix m1(rows, columns, el);
 
     return m1;
 }
 
-matrix matrix::operator * (matrix m){
+matrix matrix::operator * (const matrix& m){
     matrix el(rows, m.columns);
 
     for(int i = 0; i < el.columns; i++){
         for(int j = 0; j < el.rows; j++){
-            el.elements[i+(j*m.columns)] = elements[i*columns] * m.elements[j];
+            el.elements[j+(i*m.columns)] = elements[i*columns] * m.elements[j];
             for(int z = 1; z < columns; z++){
-                el.elements[i+(j*m.columns)] += elements[z+(i*columns)] * m.elements[z*m.columns+j];
+                el.elements[j+(i*m.columns)] += elements[z+(i*columns)] * m.elements[z*m.columns+j];
             }
         }
     }
@@ -245,16 +254,15 @@ matrix matrix::operator * (matrix m){
 }
 
 matrix matrix::operator / (float number){
-    float* el = (float*)malloc(sizeof(matrix)*columns*rows);
+    matrix m1(rows, columns);
     for(int i = 0; i < rows*columns; i++){
-        el[i] = elements[i]/number;
+        m1.elements[i] = elements[i]/number;
     }
-    matrix m1(rows, columns, el);
 
     return m1;
 }
 
-bool matrix::operator == (matrix m1){
+bool matrix::operator == (const matrix& m1){
     if(m1.rows != rows || m1.columns != columns){
         return false;
     }
@@ -266,7 +274,7 @@ bool matrix::operator == (matrix m1){
     return true;
 }
 
-bool matrix::operator != (matrix m1){
+bool matrix::operator != (const matrix& m1){
     if(m1.rows != rows || m1.columns != columns){
         return true;
     }

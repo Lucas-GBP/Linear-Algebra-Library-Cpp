@@ -1,4 +1,4 @@
-CC = g++
+CC = clang++
 OUT_FILES = $(addsuffix .o,$(addprefix out/, main $(notdir $(basename $(wildcard libs/*.cpp)))))
 
 executable.exe: $(OUT_FILES)
