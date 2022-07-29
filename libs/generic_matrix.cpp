@@ -51,36 +51,6 @@ matrix::~matrix(){
     }*/
 }
 
-void matrix::operator = (float num){
-    if(rows == columns){
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < columns; j++){
-                if(i == j){
-                    elements[j+(i*columns)] = num;
-                } else {
-                    elements[j+(i*columns)] = 0;
-                }
-            }
-        }
-    } else {
-        for(int i = 0; i < rows*columns; i++){
-            elements[i] = num;
-        }
-    }
-}
-
-void matrix::operator = (const matrix& m){
-    free(elements);
-    columns = m.columns;
-    rows = m.rows;
-
-    elements = (float*)malloc(sizeof(matrix)*(rows*columns));
-
-    for(int i = 0; i < columns*rows; i++){
-        elements[i] = m.elements[i];
-    }
-}
-
 float matrix::element(int row, int column){
     return elements[column + (columns*row)];
 }
@@ -115,6 +85,36 @@ matrix matrix::transpose(){
 void matrix::ramdom_values(int range){
     for(int i = 0; i < rows*columns; i++){
         elements[i] = (rand()%(2*range))-range;
+    }
+}
+
+void matrix::operator = (float num){
+    if(rows == columns){
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < columns; j++){
+                if(i == j){
+                    elements[j+(i*columns)] = num;
+                } else {
+                    elements[j+(i*columns)] = 0;
+                }
+            }
+        }
+    } else {
+        for(int i = 0; i < rows*columns; i++){
+            elements[i] = num;
+        }
+    }
+}
+
+void matrix::operator = (const matrix& m){
+    free(elements);
+    columns = m.columns;
+    rows = m.rows;
+
+    elements = (float*)malloc(sizeof(matrix)*(rows*columns));
+
+    for(int i = 0; i < columns*rows; i++){
+        elements[i] = m.elements[i];
     }
 }
 
